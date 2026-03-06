@@ -14,7 +14,7 @@
 ## How to Use in Insomnia
 
 1. Create or open a request
-2. In the **Headers** tab, add the `slow-network` header
+2. In the **Headers** tab, add the `X-Slow-Network` header
 3. Set the value (see options below) and send the request
 4. The response will be delivered in chunks with delay, simulating a slow network
 
@@ -22,25 +22,26 @@
 
 ### Option 1: Template Tags (recommended)
 
-1. Add the `slow-network` header
+1. Add the header: use `{% slowNetworkHeader %}` as header name, or type `X-Slow-Network`
 2. Set the value to a template tag: `{% slowNetwork3g %}`, `{% slowNetworkEdge %}`, etc.
 3. Send the request
 
 **Available presets:**
 
-| Tag                                   | Chunk  | Delay  | Simulates |
-| ------------------------------------- | ------ | ------ | --------- |
-| `{% slowNetwork3g %}`                 | 256 B  | 200 ms | 3G        |
-| `{% slowNetworkEdge %}`               | 128 B  | 400 ms | EDGE      |
-| `{% slowNetwork2g %}`                 | 64 B   | 700 ms | 2G        |
-| `{% slowNetworkCustom chunk delay %}` | custom | custom | Custom    |
+| Tag                                   | Returns        | Simulates   |
+| ------------------------------------- | -------------- | ----------- |
+| `{% slowNetworkHeader %}`             | X-Slow-Network | Header name |
+| `{% slowNetwork3g %}`                 | 256 B, 200 ms  | 3G          |
+| `{% slowNetworkEdge %}`               | 128 B, 400 ms  | EDGE        |
+| `{% slowNetwork2g %}`                 | 64 B, 700 ms   | 2G          |
+| `{% slowNetworkCustom chunk delay %}` | custom         | Custom      |
 
 ### Option 2: Manual value
 
-Set the `slow-network` header to a value in the format `chunk|delay`:
+Set the `X-Slow-Network` header to a value in the format `chunk|delay`:
 
 ```
-slow-network: 256|200
+X-Slow-Network: 256|200
 ```
 
 - **chunk** – Size of each chunk in bytes (e.g. 256)
@@ -51,7 +52,7 @@ slow-network: 256|200
 ```
 GET https://api.example.com/users
 Headers:
-  slow-network: 128|400
+  X-Slow-Network: 128|400
 ```
 
 This simulates an EDGE-like connection: 128 bytes per chunk, 400 ms between chunks.
@@ -80,7 +81,7 @@ This plugin **throttles request and response transfers** by sending data in smal
 
 ## How It Works
 
-1. **Proxy** – When a request includes the `slow-network` header, the plugin starts a local proxy server.
+1. **Proxy** – When a request includes the `X-Slow-Network` header, the plugin starts a local proxy server.
 2. **Interception** – The request is redirected to `localhost`. The proxy receives it and forwards to the actual target.
 3. **Throttling** – Both the request body and response body are sent in chunks of `N` bytes, with `M` ms delay between each chunk.
 4. **Cleanup** – After the response finishes, the proxy is stopped.

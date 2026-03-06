@@ -1,5 +1,14 @@
 module.exports.templateTags = [
   {
+    name: "slowNetworkHeader",
+    displayName: "Slow Network: Header Name",
+    description: "Returns X-Slow-Network header name",
+    args: [],
+    async run() {
+      return "X-Slow-Network"
+    },
+  },
+  {
     name: "slowNetwork3g",
     displayName: "Slow Network: 3G",
     description: "3G - 256B chunk, 200ms delay",
@@ -29,17 +38,17 @@ module.exports.templateTags = [
   {
     name: "slowNetworkCustom",
     displayName: "Slow Network: Custom",
-    description: "Valor customizado no formato chunks|delay (ex: 512|100)",
+    description: "Custom value in chunk|delay format (e.g. 512|100)",
     args: [
       {
         displayName: "Chunk (bytes)",
-        description: "Tamanho do chunk em bytes",
+        description: "Chunk size in bytes",
         type: "number",
         defaultValue: 256,
       },
       {
         displayName: "Delay (ms)",
-        description: "Delay entre chunks em milissegundos",
+        description: "Delay between chunks in milliseconds",
         type: "number",
         defaultValue: 200,
       },

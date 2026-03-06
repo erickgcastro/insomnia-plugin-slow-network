@@ -7,7 +7,9 @@ function parseSlowNetworkValue(value) {
   if (!value || typeof value !== "string") return null
   const match = value.trim().match(/^(\d+)\s*\|\s*(\d+)$/)
   if (match) {
-    return { chunk: parseInt(match[1], 10), delay: parseInt(match[2], 10) }
+    const chunk = parseInt(match[1], 10)
+    const delay = parseInt(match[2], 10)
+    if (chunk > 0 && delay >= 0) return { chunk, delay }
   }
   return null
 }
@@ -15,11 +17,15 @@ function parseSlowNetworkValue(value) {
 let server = null
 let serverStarted = false
 let currentPort = null
+let startProxyPromise = null
+const requestsUsingProxy = new Set()
 
 function getAvailablePort() {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const s = net.createServer()
+    s.once("error", reject)
     s.listen(0, () => {
+      s.removeAllListeners("error")
       const port = s.address().port
       s.close(() => resolve(port))
     })
@@ -49,15 +55,31 @@ function stopProxy() {
     server = null
     serverStarted = false
     currentPort = null
+    startProxyPromise = null
+    requestsUsingProxy.clear()
     console.log("[slow-network] Proxy stopped")
   }
 }
 
 async function startProxy() {
-  if (serverStarted) return currentPort
+  if (serverStarted && server) return currentPort
+  if (startProxyPromise) return startProxyPromise
 
-  const port = await getAvailablePort()
+  startProxyPromise = (async () => {
+    try {
+      const port = await getAvailablePort()
+      await createAndListenServer(port)
+      return port
+    } catch (err) {
+      startProxyPromise = null
+      throw err
+    }
+  })()
 
+  return startProxyPromise
+}
+
+async function createAndListenServer(port) {
   server = http.createServer((req, res) => {
     const targetUrl = req.headers["x-real-url"]
 
@@ -67,16 +89,23 @@ async function startProxy() {
       return
     }
 
-    const target = new URL(targetUrl)
+    let target
+    try {
+      target = new URL(targetUrl)
+    } catch {
+      res.writeHead(400)
+      res.end("Invalid target URL")
+      return
+    }
 
     const protocol = target.protocol === "https:" ? https : http
 
-    const chunkSize = parseInt(req.headers["slow-chunk"]) || 256
-    const delay = parseInt(req.headers["slow-delay"]) || 200
+    const chunkSize = Math.max(1, parseInt(req.headers["slow-chunk"], 10) || 256)
+    const delay = Math.max(0, parseInt(req.headers["slow-delay"], 10) || 200)
 
     const forwardHeaders = { ...req.headers }
     delete forwardHeaders["x-real-url"]
-    delete forwardHeaders["slow-network"]
+    delete forwardHeaders["x-slow-network"]
     delete forwardHeaders["slow-chunk"]
     delete forwardHeaders["slow-delay"]
     forwardHeaders["host"] = target.host
@@ -90,8 +119,6 @@ async function startProxy() {
     }
 
     const proxyReq = protocol.request(options, (proxyRes) => {
-      res.writeHead(proxyRes.statusCode, proxyRes.headers)
-
       const responseChunks = []
       proxyRes.on("data", (chunk) => responseChunks.push(chunk))
       proxyRes.on("error", (err) => {
@@ -102,6 +129,10 @@ async function startProxy() {
       proxyRes.on("end", async () => {
         try {
           const buffer = Buffer.concat(responseChunks)
+          const headers = { ...proxyRes.headers }
+          delete headers["transfer-encoding"]
+          headers["content-length"] = String(buffer.length)
+          res.writeHead(proxyRes.statusCode, headers)
           await sendChunks(res, buffer, chunkSize, delay)
         } catch (err) {
           console.error("[slow-network] Send error:", err.message)
@@ -137,22 +168,28 @@ async function startProxy() {
     })
   })
 
+  await new Promise((resolve, reject) => {
+    server.once("error", (err) => {
+      stopProxy()
+      reject(err)
+    })
+    server.listen(port, () => {
+      serverStarted = true
+      currentPort = port
+      resolve()
+    })
+  })
+
   server.on("error", (err) => {
     console.error("[slow-network] Proxy error:", err.message)
     stopProxy()
   })
-
-  server.listen(port)
-
-  serverStarted = true
-  currentPort = port
-  return port
 }
 
 module.exports.requestHooks = [
   async (context) => {
     const headers = context.request.getHeaders()
-    const slowHeader = headers.find((h) => h.name.toLowerCase() === "slow-network")
+    const slowHeader = headers.find((h) => h.name.toLowerCase() === "x-slow-network")
     const config = parseSlowNetworkValue(slowHeader?.value)
 
     if (!config) {
@@ -164,6 +201,7 @@ module.exports.requestHooks = [
     const port = await startProxy()
     console.log("[slow-network] Sending chunks:", config.chunk, "B,", config.delay, "ms")
 
+    requestsUsingProxy.add(context.request.getId())
     const originalUrl = context.request.getUrl()
     context.request.setHeader("x-real-url", originalUrl)
     context.request.setHeader("slow-chunk", String(config.chunk))
@@ -173,7 +211,11 @@ module.exports.requestHooks = [
 ]
 
 module.exports.responseHooks = [
-  async () => {
-    stopProxy()
+  async (context) => {
+    const requestId = context.response?.getRequestId?.()
+    if (requestId && requestsUsingProxy.has(requestId)) {
+      requestsUsingProxy.delete(requestId)
+      stopProxy()
+    }
   },
 ]
