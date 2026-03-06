@@ -1,27 +1,40 @@
 {
   "name": "insomnia-plugin-slow-network",
-  "version": "1.0.1",
+  "version": "1.0.11",
+  "description": "Simulates slow network conditions (3G, EDGE, 2G) to test APIs under poor connectivity. Use the X-Slow-Network header with chunk|delay format or template tags for ready-made presets.",
+  "main": "src/main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/erickgcastro/insomnia-plugin-slow-network.git"
   },
   "license": "MIT",
-  "insomnia": {
-    "name": "slow-network",
-    "displayName": "Slow Network",
-    "description": "Simulates slow network conditions (3G, EDGE, 2G) to test APIs under poor connectivity. Use the X-Slow-Network header with chunk|delay format or template tags for ready-made presets."
-  },
-  "description": "Simulates slow network conditions (3G, EDGE, 2G) to test APIs under poor connectivity. Use the X-Slow-Network header with chunk|delay format or template tags for ready-made presets.",
   "bugs": {
     "url": "https://github.com/erickgcastro/insomnia-plugin-slow-network/issues"
-  },
-  "publisher": {
-    "name": "Erick Gabriel (erickgcastro)",
-    "icon": "https://avatars.githubusercontent.com/u/79425923?v=4"
   },
   "author": {
     "name": "Erick Gabriel (erickgcastro)",
     "url": "https://github.com/erickgcastro"
   },
-  "main": "src/main.js"
+  "keywords": [
+    "insomnia",
+    "plugin",
+    "slow-network",
+    "slow",
+    "network",
+    "slow-network-plugin",
+    "slow-network-plugin-for-insomnia"
+  ],
+  "insomnia": {
+    "name": "slow-network",
+    "displayName": "Slow Network",
+    "description": "Simulates slow network conditions (3G, EDGE, 2G) to test APIs under poor connectivity. Use the X-Slow-Network header with chunk|delay format or template tags for ready-made presets.",
+    "images": {
+      "icon": "./assets/icon.png"
+    },
+    "publisher": {
+      "name": "Erick Gabriel (erickgcastro)",
+      "icon": "https://avatars.githubusercontent.com/u/79425923?v=4"
+    },
+    "unlisted": false
+  }
 }

@@ -11,7 +11,7 @@ module.exports.templateTags = [
   {
     name: "slowNetwork3g",
     displayName: "Slow Network: 3G",
-    description: "3G - 256B chunk, 200ms delay",
+    description: "256B chunk, 200ms delay",
     args: [],
     async run() {
       return "256|200"
@@ -20,7 +20,7 @@ module.exports.templateTags = [
   {
     name: "slowNetworkEdge",
     displayName: "Slow Network: EDGE",
-    description: "EDGE - 128B chunk, 400ms delay",
+    description: "128B chunk, 400ms delay",
     args: [],
     async run() {
       return "128|400"
@@ -29,7 +29,7 @@ module.exports.templateTags = [
   {
     name: "slowNetwork2g",
     displayName: "Slow Network: 2G",
-    description: "2G - 64B chunk, 700ms delay",
+    description: "64B chunk, 700ms delay",
     args: [],
     async run() {
       return "64|700"
