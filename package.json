@@ -35,6 +35,13 @@
       "name": "Erick Gabriel (erickgcastro)",
       "icon": "https://avatars.githubusercontent.com/u/79425923?v=4"
     },
-    "unlisted": false
+    "unlisted": false,
+    "files": [
+      "src/main.js",
+      "src/tags.js",
+      "src/hooks.js",
+      "assets/icon.png",
+      "README.md"
+    ]
   }
 }
