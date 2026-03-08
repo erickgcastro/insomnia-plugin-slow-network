@@ -37,10 +37,8 @@
     },
     "unlisted": false,
     "files": [
-      "src/main.js",
-      "src/tags.js",
-      "src/hooks.js",
-      "assets/icon.png",
+      "src",
+      "assets",
       "README.md"
     ]
   }
