@@ -1,6 +1,6 @@
 {
   "name": "insomnia-plugin-slow-network",
-  "version": "1.0.11",
+  "version": "1.0.2",
   "description": "Simulates slow network conditions (3G, EDGE, 2G) to test APIs under poor connectivity. Use the X-Slow-Network header with chunk|delay format or template tags for ready-made presets.",
   "main": "src/main.js",
   "repository": {
@@ -35,6 +35,13 @@
       "name": "Erick Gabriel (erickgcastro)",
       "icon": "https://avatars.githubusercontent.com/u/79425923?v=4"
     },
-    "unlisted": false
+    "unlisted": false,
+    "files": [
+      "src/main.js",
+      "src/tags.js",
+      "src/hooks.js",
+      "assets/icon.png",
+      "README.md"
+    ]
   }
 }
